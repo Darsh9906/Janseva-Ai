@@ -17,7 +17,7 @@ const COMMENTS = "comments";
 const ISSUES = "issues";
 
 export async function listComments(issueId: string): Promise<Comment[]> {
-  // single equality filter (no composite index needed); sort client-side
+  
   const q = query(collection(db, COMMENTS), where("issueId", "==", issueId));
   const snap = await getDocs(q);
   return snap.docs
