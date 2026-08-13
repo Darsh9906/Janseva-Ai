@@ -29,7 +29,7 @@ import {
   resolveIssue,
 } from "@/services/issues";
 import { setRole, setOfficer, listOfficers } from "@/services/users";
-import { DEPARTMENTS, departmentForCategory } from "@/lib/departments";
+import { DEPARTMENTS, departmentForCategory } from "@/lib/department";
 import { cn, timeAgo } from "@/lib/utils";
 import { ISSUE_STATUSES } from "@/types";
 import type { Issue, IssueStatus, AppUser } from "@/types";
