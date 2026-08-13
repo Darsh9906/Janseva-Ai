@@ -1,65 +1,297 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  Camera,
+  MapPin,
+  Users,
+  Clock,
+  ArrowRight,
+  ArrowUpRight,
+  ShieldCheck,
+  Sparkles,
+  Building2,
+  Activity,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { SeverityBadge, StatusBadge } from "@/components/ui/Badge";
+import IssueCard from "@/components/issues/IssueCard";
+import { listIssues } from "@/services/issues";
+import { firebaseEnabled } from "@/lib/firebase";
+import { timeAgo } from "@/lib/utils";
+import type { Issue } from "@/types";
+
+const STEPS_TRACK = ["Reported", "Verified", "Assigned", "Working", "Resolved"];
+
+const how = [
+  {
+    icon: Camera,
+    title: "Snap & report",
+    body: "Take a photo of the problem. AI reads it, grades the severity and pins the location automatically.",
+  },
+  {
+    icon: Users,
+    title: "Neighbours verify",
+    body: "People nearby confirm it really exists, so genuine issues rise to the top — no duplicates, no noise.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Officials resolve",
+    body: "It's routed to the right department, worked, and closed — with every step visible to everyone.",
+  },
+];
+
+export default function LandingPage() {
+  const [issues, setIssues] = useState<Issue[]>([]);
+
+  useEffect(() => {
+    if (!firebaseEnabled) return;
+    listIssues(50).then(setIssues).catch(() => {});
+  }, []);
+
+  const featured = issues[0] ?? null;
+  const total = issues.length;
+  const resolved = issues.filter((i) => i.status === "Resolved").length;
+  const verified = issues.filter((i) => i.confirmCount > 0).length;
+  const recent = issues.slice(0, 3);
+  const currentStep = featured ? STEPS_TRACK.indexOf(
+    featured.status === "In Progress" ? "Working" : featured.status
+  ) : 1;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div>
+      <section className="relative overflow-hidden border-b border-line">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary-50 opacity-70 blur-3xl" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-6 pb-16 pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:pb-24 lg:pt-24">
+        
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink-soft">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Civic reporting, made simple
+            </span>
+            <h1 className="mt-6 text-5xl leading-[1.04] text-ink sm:text-6xl lg:text-7xl">
+              Tell your city
+              <br />
+              what needs <span className="italic text-primary">fixing</span>.
+            </h1>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-soft lg:text-xl">
+              Report a pothole, a leak or a broken light in under a minute.
+              Rally your neighbours, and follow it all the way to resolved.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/report">
+                <Button size="lg" className="group h-13 px-7 text-base">
+                  Report an issue
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+                </Button>
+              </Link>
+              <Link href="/map">
+                <Button size="lg" variant="outline" className="h-13 px-7 text-base">
+                  See the map
+                </Button>
+              </Link>
+            </div>
+            <p className="mt-6 flex items-center gap-2 text-sm text-ink-faint">
+              <ShieldCheck size={15} className="text-primary" />
+              Free · no app to install · works on any phone
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="relative mx-auto w-full max-w-md"
+          >
+            <span className="absolute -left-3 -top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
+              <Activity size={13} /> Live report
+            </span>
+            <Link
+              href={featured ? `/issues/${featured.id}` : "/report"}
+              className="block overflow-hidden rounded-2xl border border-line bg-white shadow-[0_18px_50px_-16px_rgba(29,29,26,0.22)] transition-transform hover:-translate-y-1"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <div className="relative flex h-48 items-center justify-center bg-primary-50">
+                {featured?.imageUrl ? (
+                  
+                  <img src={featured.imageUrl} alt={featured.title} className="h-full w-full object-cover" />
+                ) : (
+                  <Camera size={34} className="text-primary/40" />
+                )}
+                <div className="absolute left-3 top-3"><StatusBadge status={featured?.status ?? "Reported"} /></div>
+                <div className="absolute right-3 top-3"><SeverityBadge severity={featured?.severity ?? "High"} /></div>
+                <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 text-xs font-medium text-ink-soft backdrop-blur">
+                  <Clock size={12} /> {featured ? timeAgo(featured.createdAt) : "just now"}
+                </span>
+              </div>
+              <div className="p-6">
+                <p className="text-sm font-medium text-primary">{featured?.category ?? "Pothole"}</p>
+                <h3 className="mt-1 text-lg font-semibold text-ink">{featured?.title ?? "Large pothole near the junction"}</h3>
+                <p className="mt-1 flex items-center gap-1 text-sm text-ink-faint">
+                  <MapPin size={14} /> {featured?.address ?? "Ward 12 · MG Road"}
+                </p>
+                <div className="mt-5 flex items-center gap-2 border-t border-line pt-4">
+                  <Users size={16} className="text-ink-faint" />
+                  <span className="text-sm text-ink-soft">{featured?.confirmCount ?? 3} neighbours verified this</span>
+                </div>
+                <div className="mt-4 flex items-center gap-1.5">
+                  {STEPS_TRACK.map((s, i) => (
+                    <div key={s} className="flex flex-1 flex-col items-center gap-1">
+                      <span className={`h-1.5 w-full rounded-full ${i <= currentStep ? "bg-primary" : "bg-line"}`} />
+                      <span className={`text-[10px] ${i <= currentStep ? "font-semibold text-primary" : "text-ink-faint"}`}>{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="border-b border-line bg-primary text-white">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-6 py-12 sm:grid-cols-4">
+          {[
+            { value: total, label: "reports filed" },
+            { value: verified, label: "verified by neighbours" },
+            { value: resolved, label: "issues resolved" },
+            { value: 6, label: "city departments" },
+          ].map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="text-center"
             >
-              Learning
-            </a>{" "}
-            center.
+              <div className="display text-4xl lg:text-5xl">{s.value}</div>
+              <p className="mt-1 text-sm text-white/70">{s.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {recent.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6 py-20">
+          <div className="flex items-end justify-between">
+            <div>
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                <Activity size={15} /> Live from your community
+              </span>
+              <h2 className="display mt-2 text-3xl text-ink lg:text-4xl">
+                What&apos;s being reported right now
+              </h2>
+            </div>
+            <Link href="/issues" className="hidden items-center gap-1 text-sm font-semibold text-primary hover:underline sm:flex">
+              View all <ArrowUpRight size={15} />
+            </Link>
+          </div>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {recent.map((issue) => (
+              <IssueCard key={issue.id} issue={issue} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="border-y border-line bg-white">
+        <div className="mx-auto max-w-6xl px-6 py-20 lg:py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="display text-4xl text-ink lg:text-5xl">How JanSeva works</h2>
+            <p className="mt-3 text-lg text-ink-soft">Three steps. Full transparency, start to finish.</p>
+          </div>
+          <div className="relative mt-14 grid gap-10 sm:grid-cols-3">
+            
+            <div className="absolute left-[16%] right-[16%] top-6 hidden h-px bg-line sm:block" />
+            {how.map((s, i) => (
+              <motion.div
+                key={s.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className="relative text-center"
+              >
+                <div className="relative z-10 mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-line bg-white text-primary shadow-sm">
+                  <s.icon size={20} />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-ink">{s.title}</h3>
+                <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-ink-soft">{s.body}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-20 lg:py-24">
+        <div className="grid gap-6 md:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="rounded-2xl border border-line bg-white p-8 lg:p-10"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary">
+              <Users size={20} />
+            </div>
+            <h3 className="display mt-5 text-2xl text-ink">For citizens</h3>
+            <p className="mt-2 text-ink-soft">
+              Report in seconds, verify your neighbours&apos; reports, and earn
+              points for keeping your area in good shape.
+            </p>
+            <Link href="/report" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+              Report an issue <ArrowRight size={15} />
+            </Link>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="rounded-2xl border border-line bg-white p-8 lg:p-10"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary">
+              <Building2 size={20} />
+            </div>
+            <h3 className="display mt-5 text-2xl text-ink">For officials</h3>
+            <p className="mt-2 text-ink-soft">
+              A clean operations dashboard to triage, route to the right
+              department, and resolve — with live analytics and accountability.
+            </p>
+            <Link href="/dashboard" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+              View the dashboard <ArrowRight size={15} />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary">
+            <Sparkles size={22} />
+          </div>
+          <h2 className="display mt-5 text-4xl text-ink lg:text-5xl">
+            See something that needs fixing?
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-lg text-ink-soft">
+            It takes under a minute. Your report could be the one that finally
+            gets it done.
           </p>
+          <Link href="/report" className="mt-8 inline-block">
+            <Button size="lg" className="h-13 px-8 text-base">
+              Report an issue
+              <ArrowRight size={18} />
+            </Button>
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }

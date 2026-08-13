@@ -1,26 +1,142 @@
 @import "tailwindcss";
 
+/* ============================================================
+   JanSeva — simple & sweet.
+   A calm, professional civic platform. White paper, one green
+   accent, hairline borders, generous space. Nothing loud.
+   ============================================================ */
+
+@theme {
+  --color-primary: #0f7a5c; /* JanSeva green */
+  --color-primary-600: #0f7a5c;
+  --color-primary-700: #0b5d46;
+  --color-primary-50: #e9f3ef;
+
+  --color-secondary: #0f7a5c;
+  --color-secondary-50: #e9f3ef;
+
+  --color-warning: #b45309;
+  --color-warning-50: #f8efe1;
+
+  --color-danger: #be3a2b;
+  --color-danger-50: #f8e9e6;
+
+  --color-bg: #fbfaf7; /* warm white */
+  --color-dark: #15211c; /* deep green-charcoal */
+  --color-ink: #1d1d1a;
+  --color-ink-soft: #5a5a54;
+  --color-ink-faint: #a2a09a;
+  --color-line: #ebe8e1;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-soft: 0 1px 2px rgba(29, 29, 26, 0.04);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--color-bg);
+  --foreground: var(--color-ink);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* one clean sans, just heavier + tighter for big headings */
+h1,
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #dddad2;
+  border-radius: 99px;
+  border: 3px solid var(--color-bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c8c4ba;
+}
+
+/* the backdrop is intentionally plain */
+.app-aurora {
+  display: none;
+}
+
+/* simple, flat card surfaces — no glass, no blur */
+.glass,
+.glass-card {
+  background: #ffffff;
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-soft);
+}
+
+/* "gradient" text is just the solid accent — keep it calm */
+.text-gradient {
+  color: var(--color-primary);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #efece5;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+.leaflet-container,
+.gm-style {
+  font-family: var(--font-sans);
 }
