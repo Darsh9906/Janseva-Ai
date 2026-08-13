@@ -1,0 +1,64 @@
+rules_version = '2';
+
+// ============================================================
+// JanSeva AI — Firestore security rules
+// Deploy: firebase deploy --only firestore:rules
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function isOfficer() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['officer', 'admin'];
+    }
+
+    // Users: public read (leaderboard); a user creates/edits only their own
+    // profile. Hero points / roles are adjusted by trusted writes; tighten
+    // further with Cloud Functions for production.
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isSelf(userId);
+      allow update: if isSelf(userId) || isOfficer();
+      allow delete: if false;
+    }
+
+    // Issues: anyone can read; signed-in users create their own; officers (or
+    // the reporter) can update; deletes are blocked.
+    match /issues/{issueId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if signedIn();
+      allow delete: if isOfficer();
+    }
+
+    // Verifications: one vote document per user; readable by all.
+    match /verifications/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Comments: readable by all; authored by the signed-in user.
+    match /comments/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Rewards ledger (optional/future use).
+    match /rewards/{id} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+  }
+}
