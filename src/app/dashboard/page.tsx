@@ -29,7 +29,7 @@ import { computeStats, type DashboardStats } from "@/lib/analytics";
 import type { Issue } from "@/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton, EmptyState } from "@/components/ui/Feedback";
-import IssueCard from "@/components/issues/IssueCard";
+import IssueCard from "@/components/issues/issueCard";
 import { Button } from "@/components/ui/Button";
 import { firebaseEnabled } from "@/lib/firebase";
 

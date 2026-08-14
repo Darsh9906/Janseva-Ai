@@ -14,7 +14,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { getIssue } from "@/services/issues";
-import { castVote, getUserVote } from "@/services/verifications";
+import { castVote, getUserVote } from "@/services/verification";
 import { listComments, addComment } from "@/services/comments";
 import type { Issue, Comment, VoteType } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
