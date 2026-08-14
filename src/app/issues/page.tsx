@@ -6,7 +6,7 @@ import { Inbox, Plus, Search } from "lucide-react";
 import { listIssues } from "@/services/issues";
 import type { Issue, IssueStatus } from "@/types";
 import { ISSUE_STATUSES } from "@/types";
-import IssueCard from "@/components/issues/IssueCard";
+import IssueCard from "@/components/issues/issueCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton, EmptyState } from "@/components/ui/Feedback";

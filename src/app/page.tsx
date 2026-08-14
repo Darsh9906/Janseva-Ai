@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SeverityBadge, StatusBadge } from "@/components/ui/Badge";
-import IssueCard from "@/components/issues/IssueCard";
+import IssueCard from "@/components/issues/issueCard";
 import { listIssues } from "@/services/issues";
 import { firebaseEnabled } from "@/lib/firebase";
 import { timeAgo } from "@/lib/utils";
