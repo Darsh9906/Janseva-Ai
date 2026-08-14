@@ -7,8 +7,7 @@ import { X, ShieldCheck } from "lucide-react";
 const ADMIN_CODE = process.env.NEXT_PUBLIC_ADMIN_CODE || "janseva2026";
 const OFFICER_CODE = process.env.NEXT_PUBLIC_OFFICER_CODE || "officer2026";
 
-/** A strip pointing judges to the staff dashboard + access codes.
- *  Always renders on load; dismiss is for the current view only. */
+
 export default function DemoBanner() {
   const [hidden, setHidden] = useState(false);
   if (hidden) return null;

@@ -18,7 +18,7 @@ import type { User as FirebaseUser } from "firebase/auth";
 
 const USERS = "users";
 
-/** Create the user profile on first sign-in, or return the existing one. */
+
 export async function ensureUserProfile(fbUser: FirebaseUser): Promise<AppUser> {
   const ref = doc(db, USERS, fbUser.uid);
   const snap = await getDoc(ref);
@@ -68,12 +68,12 @@ export async function setRole(userId: string, role: Role) {
   await updateDoc(doc(db, USERS, userId), { role });
 }
 
-/** Promote a user to an officer of a specific department. */
+
 export async function setOfficer(userId: string, department: string) {
   await updateDoc(doc(db, USERS, userId), { role: "officer", department });
 }
 
-/** All officers/admins (for assignment pickers). Small scale → no index. */
+
 export async function listOfficers(): Promise<AppUser[]> {
   const snap = await getDocs(collection(db, USERS));
   return snap.docs

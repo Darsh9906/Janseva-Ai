@@ -50,17 +50,17 @@ export default function AdminPage() {
   const [filter, setFilter] = useState<Filter>("All");
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  // assign / resolve dialogs
+  
   const [assignFor, setAssignFor] = useState<Issue | null>(null);
   const [assignDept, setAssignDept] = useState<string>("");
-  const [assignOfficer, setAssignOfficer] = useState<string>(""); // uid or ""
+  const [assignOfficer, setAssignOfficer] = useState<string>(""); 
   const [resolveFor, setResolveFor] = useState<Issue | null>(null);
   const [resolveNote, setResolveNote] = useState("");
 
-  // admin "view as officer of department X" preview ("" = all)
+  
   const [previewDept, setPreviewDept] = useState<string>("");
 
-  // unlock
+  
   const [mode, setMode] = useState<"admin" | "officer">("admin");
   const [code, setCode] = useState("");
   const [unlockDept, setUnlockDept] = useState<string>(DEPARTMENTS[0]);
@@ -112,7 +112,7 @@ export default function AdminPage() {
     }
   }
 
-  // officers see their department's issues (by routing) or what's assigned to them
+  
   const scoped = useMemo(() => {
     if (isAdmin) {
       if (!previewDept) return issues;
@@ -185,7 +185,7 @@ export default function AdminPage() {
     }
   }
 
-  // ---- access control / unlock ----
+  
   if (authLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">

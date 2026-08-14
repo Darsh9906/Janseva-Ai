@@ -104,7 +104,7 @@ export default function ReportPage() {
     setError(null);
     setSubmitting(true);
     try {
-      // duplicate detection within 120m of same category
+      
       if (!skipDupCheck) {
         const nearby = await findNearbyIssues(
           geo.coords.lat,
@@ -119,8 +119,8 @@ export default function ReportPage() {
         }
       }
 
-      // Store a compressed photo straight in Firestore (no Storage needed).
-      // Videos can't fit a Firestore doc, so they're saved without media.
+      
+      
       const isImage = file.type.startsWith("image");
       const imageUrl = isImage
         ? await compressImageToDataUrl(file)
@@ -153,7 +153,7 @@ export default function ReportPage() {
     }
   };
 
-  // ---- gates ----
+  
   if (!firebaseEnabled) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20">

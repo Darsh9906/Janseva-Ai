@@ -13,7 +13,7 @@ import { POINTS } from "./gamification";
 
 const VERIFICATIONS = "verifications";
 
-/** Has this user already voted on this issue? */
+
 export async function getUserVote(
   issueId: string,
   userId: string
@@ -43,11 +43,7 @@ export async function listVerifications(
   }));
 }
 
-/**
- * Cast a community verification vote (one per user per issue). Recomputes the
- * issue's confirm count + verification status and rewards the verifier.
- * Returns the updated issue.
- */
+
 export async function castVote(
   issueId: string,
   userId: string,

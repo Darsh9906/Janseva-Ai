@@ -33,7 +33,7 @@ import IssueCard from "@/components/issues/IssueCard";
 import { Button } from "@/components/ui/Button";
 import { firebaseEnabled } from "@/lib/firebase";
 
-// green-leaning, harmonious status palette
+
 const STATUS_COLORS = ["#94a3b8", "#0f7a5c", "#b45309", "#d97706", "#16a34a"];
 
 export default function DashboardPage() {

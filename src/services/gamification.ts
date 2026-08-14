@@ -1,6 +1,6 @@
 import type { AppUser, BadgeKey } from "@/types";
 
-/** Hero Point values for each civic action. */
+
 export const POINTS = {
   REPORT: 10,
   REPORT_VERIFIED: 15,
@@ -38,7 +38,7 @@ export const BADGES: BadgeDef[] = [
   },
 ];
 
-/** Badges a user newly qualifies for, given their already-earned set. */
+
 export function newlyEarnedBadges(user: AppUser): BadgeKey[] {
   const owned = new Set(user.badges ?? []);
   return BADGES.filter((b) => !owned.has(b.key) && b.qualifies(user)).map(

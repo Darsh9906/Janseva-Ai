@@ -63,7 +63,7 @@ export default function MediaUpload({ onSelect }: Props) {
             {isVideo ? (
               <video src={preview} className="h-full w-full object-contain" controls />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
+              
               <img src={preview} alt="preview" className="h-full w-full object-contain" />
             )}
             <button

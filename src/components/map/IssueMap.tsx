@@ -11,7 +11,7 @@ import { firebaseEnabled } from "@/lib/firebase";
 import { MapPin } from "lucide-react";
 
 const containerStyle = { width: "100%", height: "100%" };
-const defaultCenter = { lat: 23.0225, lng: 72.5714 }; // Ahmedabad
+const defaultCenter = { lat: 23.0225, lng: 72.5714 }; 
 
 const severityColor: Record<Severity, string> = {
   Low: "#10b981",
@@ -20,9 +20,9 @@ const severityColor: Record<Severity, string> = {
   Critical: "#b91c1c",
 };
 
-// Simple, reliable circle marker (no anchor/Point needed). `path: 0` is
-// google.maps.SymbolPath.CIRCLE — used as a literal so it works whenever this
-// is evaluated after the Maps script has loaded.
+
+
+
 function pin(color: string): google.maps.Symbol {
   return {
     path: 0,

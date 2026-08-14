@@ -144,7 +144,7 @@ export default function IssueDetailPage() {
                   {issue.mediaType === "video" ? (
                     <video src={issue.imageUrl} controls className="h-full w-full object-contain" />
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
+                    
                     <img src={issue.imageUrl} alt={issue.title} className="h-full w-full object-cover" />
                   )}
                 </div>
