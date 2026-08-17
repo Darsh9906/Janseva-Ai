@@ -55,7 +55,7 @@ export async function createIssue(input: NewIssueInput): Promise<string> {
     createdServer: serverTimestamp(),
   };
   const refDoc = await addDoc(collection(db, ISSUES), docData);
-  
+  // reward the reporter
   await awardPoints(input.createdBy, POINTS.REPORT, { incrementReports: true });
   return refDoc.id;
 }
@@ -86,7 +86,7 @@ export async function listIssuesByStatus(
   status: IssueStatus,
   max = 100
 ): Promise<Issue[]> {
-  
+  // single equality filter — sort/limit client-side to avoid a composite index
   const q = query(collection(db, ISSUES), where("status", "==", status));
   const all = mapDocs(await getDocs(q)).sort(
     (a, b) => b.createdAt - a.createdAt
@@ -99,15 +99,15 @@ export async function listIssuesByUser(userId: string): Promise<Issue[]> {
   return mapDocs(await getDocs(q)).sort((a, b) => b.createdAt - a.createdAt);
 }
 
-
+/** Duplicate-detection helper: issues within `radius` m of a point. */
 export async function findNearbyIssues(
   lat: number,
   lng: number,
   radius = 120,
   category?: string
 ): Promise<Issue[]> {
-  
-  
+  // Firestore can't do geo-radius natively without geohashing, so we pull
+  // recent issues and filter by haversine distance client-side.
   const all = await listIssues(300);
   return all.filter((i) => {
     const within = distanceMeters({ lat, lng }, { lat: i.latitude, lng: i.longitude }) <= radius;
@@ -121,7 +121,10 @@ const verificationFor = (confirmCount: number): VerificationStatus => {
   return "Needs Review";
 };
 
-
+/**
+ * Recompute verification status from confirm count and, the first time an
+ * issue becomes "Verified", advance its workflow status + reward the reporter.
+ */
 export async function syncVerification(issue: Issue, confirmCount: number) {
   const verificationStatus = verificationFor(confirmCount);
   const patch: Record<string, unknown> = {
@@ -144,7 +147,7 @@ export async function syncVerification(issue: Issue, confirmCount: number) {
   await updateDoc(doc(db, ISSUES, issue.id), patch);
 }
 
-
+/** Assign an issue to a department (and optionally a specific officer). */
 export async function assignIssue(
   issue: Issue,
   department: string,
@@ -167,11 +170,12 @@ export async function assignIssue(
   });
 }
 
-
+/** Resolve an issue with a note describing how it was fixed. */
 export async function resolveIssue(
   issue: Issue,
   note: string,
-  by?: string
+  by?: string,
+  resolutionImage?: string | null
 ) {
   const entry: TimelineEntry = {
     status: "Resolved",
@@ -183,6 +187,8 @@ export async function resolveIssue(
     status: "Resolved",
     resolutionNote: note || null,
     resolvedBy: by ?? null,
+    resolutionImage: resolutionImage || null,
+    resolvedAt: Date.now(),
     timeline: [...issue.timeline, entry],
     updatedAt: Date.now(),
   });
@@ -191,7 +197,7 @@ export async function resolveIssue(
   });
 }
 
-
+/** Officer/admin status transition with timeline + resolution rewards. */
 export async function advanceStatus(
   issue: Issue,
   status: IssueStatus,

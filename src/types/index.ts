@@ -1,3 +1,7 @@
+// ============================================================
+// JanSeva — domain types (Firestore document shapes)
+// ============================================================
+
 export type Role = "citizen" | "officer" | "admin";
 
 export type IssueCategory =
@@ -44,7 +48,7 @@ export interface AppUser {
   avatar?: string | null;
   heroPoints: number;
   role: Role;
-  department?: string; 
+  department?: string; // for officers — which department they work in
   reportsCount?: number;
   resolvedCount?: number;
   badges?: BadgeKey[];
@@ -66,8 +70,8 @@ export interface Issue {
   severity: Severity;
   status: IssueStatus;
   department?: string;
-  confidence?: number; 
-  riskScore?: number; 
+  confidence?: number; // 0-100 AI confidence
+  riskScore?: number; // 0-10
   estimatedCost?: string;
   estimatedFixTime?: string;
   latitude: number;
@@ -79,12 +83,14 @@ export interface Issue {
   confirmCount: number;
   upvoteCount: number;
   commentCount: number;
-  createdBy: string; 
+  createdBy: string; // user id
   createdByName?: string;
-  assignedTo?: string | null; 
+  assignedTo?: string | null; // officer uid the work is assigned to
   assignedOfficerName?: string | null;
-  resolutionNote?: string | null; 
-  resolvedBy?: string | null; 
+  resolutionNote?: string | null; // how it was fixed
+  resolvedBy?: string | null; // officer who closed it
+  resolutionImage?: string | null;
+  resolvedAt?: number | null;
   timeline: TimelineEntry[];
   createdAt: number;
   updatedAt: number;
@@ -118,6 +124,7 @@ export interface Reward {
   createdAt: number;
 }
 
+// Shape returned by the AI Vision agent
 export interface VisionAnalysis {
   category: IssueCategory;
   severity: Severity;
