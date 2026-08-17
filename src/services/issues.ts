@@ -174,7 +174,8 @@ export async function assignIssue(
 export async function resolveIssue(
   issue: Issue,
   note: string,
-  by?: string
+  by?: string,
+  resolutionImage?: string | null
 ) {
   const entry: TimelineEntry = {
     status: "Resolved",
@@ -186,6 +187,8 @@ export async function resolveIssue(
     status: "Resolved",
     resolutionNote: note || null,
     resolvedBy: by ?? null,
+    resolutionImage: resolutionImage || null,
+    resolvedAt: Date.now(),
     timeline: [...issue.timeline, entry],
     updatedAt: Date.now(),
   });

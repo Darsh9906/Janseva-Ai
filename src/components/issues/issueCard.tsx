@@ -14,7 +14,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
     >
       <div className="relative h-44 w-full overflow-hidden bg-slate-100">
         {issue.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          
           <img
             src={issue.imageUrl}
             alt={issue.title}

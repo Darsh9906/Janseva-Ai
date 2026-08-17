@@ -236,6 +236,72 @@ export default function IssueDetailPage() {
             </Card>
           )}
 
+          {issue.status === "Resolved" && (
+            <Card>
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex items-center justify-between border-b border-line pb-3">
+                  <h2 className="font-semibold text-ink">Resolution Proof</h2>
+                  {issue.resolutionImage ? (
+                    <Badge tone="green">
+                      <CheckCircle2 size={12} /> Resolution Verified
+                    </Badge>
+                  ) : null}
+                </div>
+
+                {!issue.resolutionImage ? (
+                  <p className="mt-4 text-sm text-ink-soft italic">
+                    Resolution proof has not been uploaded yet.
+                  </p>
+                ) : (
+                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                    {/* BEFORE */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                        Before · Reported Issue
+                      </span>
+                      <div className="relative h-48 w-full overflow-hidden rounded-xl bg-slate-100 border border-line">
+                        {issue.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={issue.imageUrl}
+                            alt="Reported Issue"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-ink-faint text-sm">
+                            No image uploaded by reporter
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs text-ink-faint">
+                        Reported: {new Date(issue.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* AFTER */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+                        After · Resolution Proof
+                      </span>
+                      <div className="relative h-48 w-full overflow-hidden rounded-xl bg-slate-100 border border-line">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={issue.resolutionImage}
+                          alt="Resolution Proof"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs text-ink-faint">
+                        Resolved: {issue.resolvedAt ? new Date(issue.resolvedAt).toLocaleString() : new Date(issue.updatedAt).toLocaleString()}
+                        {issue.resolvedBy && ` by ${issue.resolvedBy}`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* verification */}
           <Card>
             <CardContent className="p-5 sm:p-6">

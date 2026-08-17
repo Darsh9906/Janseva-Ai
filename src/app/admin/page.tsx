@@ -33,6 +33,8 @@ import { DEPARTMENTS, departmentForCategory } from "@/lib/department";
 import { cn, timeAgo } from "@/lib/utils";
 import { ISSUE_STATUSES } from "@/types";
 import type { Issue, IssueStatus, AppUser } from "@/types";
+import MediaUpload from "@/components/report/MediaUpload";
+import { compressImageToDataUrl } from "@/lib/image";
 
 const ADMIN_CODE = process.env.NEXT_PUBLIC_ADMIN_CODE || "janseva2026";
 const OFFICER_CODE = process.env.NEXT_PUBLIC_OFFICER_CODE || "officer2026";
@@ -56,6 +58,7 @@ export default function AdminPage() {
   const [assignOfficer, setAssignOfficer] = useState<string>(""); // uid or ""
   const [resolveFor, setResolveFor] = useState<Issue | null>(null);
   const [resolveNote, setResolveNote] = useState("");
+  const [resolveFile, setResolveFile] = useState<File | null>(null);
 
   // admin "view as officer of department X" preview ("" = all)
   const [previewDept, setPreviewDept] = useState<string>("");
@@ -176,9 +179,19 @@ export default function AdminPage() {
     if (!resolveFor) return;
     setBusyId(resolveFor.id);
     try {
-      await resolveIssue(resolveFor, resolveNote.trim(), user?.name);
+      let resolutionImage: string | null = null;
+      if (resolveFile) {
+        resolutionImage = await compressImageToDataUrl(resolveFile);
+      }
+      await resolveIssue(
+        resolveFor,
+        resolveNote.trim(),
+        user?.name,
+        resolutionImage
+      );
       setResolveFor(null);
       setResolveNote("");
+      setResolveFile(null);
       await load();
     } finally {
       setBusyId(null);
@@ -549,10 +562,23 @@ export default function AdminPage() {
       </Dialog>
 
       {/* RESOLVE DIALOG */}
-      <Dialog open={!!resolveFor} onClose={() => setResolveFor(null)} title="Resolve issue">
+      <Dialog
+        open={!!resolveFor}
+        onClose={() => {
+          setResolveFor(null);
+          setResolveFile(null);
+        }}
+        title="Resolve issue"
+      >
         {resolveFor && (
           <>
             <p className="text-sm text-ink-soft">{resolveFor.title}</p>
+            <div className="mt-4">
+              <label className="mb-1.5 block text-sm font-medium text-ink">
+                Upload Resolution Proof
+              </label>
+              <MediaUpload onSelect={(f) => setResolveFile(f)} />
+            </div>
             <label className="mb-1.5 mt-4 block text-sm font-medium text-ink">
               How was it fixed?
             </label>
@@ -563,7 +589,15 @@ export default function AdminPage() {
               placeholder="e.g. Pothole filled and re-tarred by the road crew."
             />
             <div className="mt-5 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setResolveFor(null)}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setResolveFor(null);
+                  setResolveFile(null);
+                }}
+              >
+                Cancel
+              </Button>
               <Button loading={busyId === resolveFor.id} onClick={confirmResolve}>
                 Mark resolved
               </Button>

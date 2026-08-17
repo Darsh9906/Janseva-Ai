@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** JanSeva wordmark — a small green "जन" mark + name. Simple and calm. */
+
 export function Logo({
   className,
   subtitle = true,

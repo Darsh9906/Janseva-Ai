@@ -1,7 +1,7 @@
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 
-/** Upload a report image/video and return its public download URL. */
+
 export async function uploadIssueMedia(
   userId: string,
   file: File

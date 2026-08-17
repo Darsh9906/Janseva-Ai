@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-    // Surface any error from the redirect sign-in flow when we land back.
+    
     getRedirectResult(auth).catch((err) => {
       const code = (err as { code?: string })?.code;
       if (code === "auth/configuration-not-found") {
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (fbUser) {
           try {
             const profile = await ensureUserProfile(fbUser);
-            // re-read to pick up any server-side role/points changes
+            
             const fresh = (await getUser(fbUser.uid)) ?? profile;
             setUser(fresh);
           } catch (e) {
@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       },
       (err) => {
-        // e.g. auth/configuration-not-found when Authentication / the Google
-        // provider hasn't been enabled in the Firebase console yet.
+        
+        
         console.warn(
           "Firebase Auth is not ready yet. Enable Authentication (Google sign-in) " +
             "in the Firebase console. Details:",
@@ -74,12 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * Trigger Google sign-in. Tries the popup first (best UX, no page reload), and
- * falls back to a full-page redirect when the popup is blocked or COOP
- * interferes — which avoids the cross-window polling that triggers the noisy
- * "Cross-Origin-Opener-Policy would block window.closed" warnings.
- */
+
 export async function signInWithGoogle() {
   if (!firebaseEnabled) {
     alert(
@@ -92,7 +87,7 @@ export async function signInWithGoogle() {
   } catch (err) {
     const code = (err as { code?: string })?.code;
     if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
-      return; // user dismissed — not an error
+      return; 
     }
     if (code === "auth/configuration-not-found") {
       alert(
@@ -101,7 +96,7 @@ export async function signInWithGoogle() {
       );
       return;
     }
-    // popup blocked / COOP / network popup issues → use redirect instead
+    
     if (
       code === "auth/popup-blocked" ||
       code === "auth/operation-not-supported-in-this-environment" ||
@@ -114,7 +109,7 @@ export async function signInWithGoogle() {
   }
 }
 
-/** Force the redirect flow (used if popups are consistently problematic). */
+
 export async function signInWithGoogleRedirect() {
   if (!firebaseEnabled) return;
   await signInWithRedirect(auth, googleProvider);
