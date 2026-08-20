@@ -1,15 +1,22 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { signInWithGoogle, signOut } from "@/components/auth/AuthProvider";
+import { signOut } from "@/components/auth/AuthProvider";
 
 /** Convenience hook exposing auth state + actions. */
 export function useAuth() {
-  const { user, loading, openSignIn } = useAuthStore();
+  const router = useRouter();
+  const { user, loading } = useAuthStore();
 
+  const signIn = () => {
+    router.push("/auth");
+  };
+
+  /** Run `action` if signed in; otherwise redirect to /auth page. */
   const requireAuth = (action?: () => void) => {
     if (!user) {
-      openSignIn();
+      router.push("/auth");
       return false;
     }
     action?.();
@@ -22,7 +29,7 @@ export function useAuth() {
     isAuthed: Boolean(user),
     isAdmin: user?.role === "admin",
     isOfficer: user?.role === "officer" || user?.role === "admin",
-    signIn: signInWithGoogle,
+    signIn,
     signOut,
     requireAuth,
   };

@@ -11,7 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Skeleton, EmptyState } from "@/components/ui/Feedback";
 import { getLeaderboard } from "@/services/users";
 import { BADGES, tierFromPoints, rankLabel } from "@/services/gamification";
-import { cn } from "@/lib/utils";
+import { cn, cleanName } from "@/lib/utils";
 import type { AppUser } from "@/types";
 
 const PODIUM_META = [
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
                         >
                           <Avatar
                             src={u.avatar}
-                            name={u.name}
+                            name={cleanName(u.name, u.email)}
                             size={meta.size}
                           />
                         </div>
@@ -160,7 +160,7 @@ export default function LeaderboardPage() {
                           <Icon className="h-4 w-4" />
                         </div>
                         <p className="text-base font-semibold text-ink">
-                          {u.name}
+                          {cleanName(u.name, u.email)}
                         </p>
                         <Badge tone="blue" className="mt-1.5">
                           {tierFromPoints(u.heroPoints)}
@@ -195,10 +195,10 @@ export default function LeaderboardPage() {
                           <span className="w-8 shrink-0 text-center text-sm font-bold text-ink-faint">
                             {rankLabel(index)}
                           </span>
-                          <Avatar src={u.avatar} name={u.name} size={40} />
+                          <Avatar src={u.avatar} name={cleanName(u.name, u.email)} size={40} />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold text-ink">
-                              {u.name}
+                              {cleanName(u.name, u.email)}
                             </p>
                             <div className="mt-1 flex flex-wrap items-center gap-1.5">
                               <Badge tone="slate" className="text-[10px]">

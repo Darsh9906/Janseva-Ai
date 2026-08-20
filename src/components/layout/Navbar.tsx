@@ -11,7 +11,13 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
 
-const links = [
+const cleanName = (name?: string | null, email?: string | null) => {
+  const n = name?.trim();
+  if (n) return n;
+  return email?.split("@")[0] ?? "User";
+};
+
+const publicLinks = [
   { href: "/issues", label: "Issues" },
   { href: "/map", label: "Map" },
   { href: "/dashboard", label: "Dashboard" },
@@ -20,13 +26,27 @@ const links = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, isAuthed, isOfficer, signIn, signOut } = useAuth();
+  const { user, isAuthed, signIn, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const allLinks = isOfficer
-    ? [...links, { href: "/admin", label: "Admin" }]
-    : links;
+  const showReportButton = !isAuthed || user?.role === "citizen";
+
+  const allLinks = !isAuthed
+    ? publicLinks
+    : user?.role === "admin"
+    ? [
+        { href: "/admin", label: "Admin Dashboard" },
+        { href: "/issues", label: "Issues" },
+        { href: "/admin?tab=officers", label: "Officers" },
+        { href: "/dashboard", label: "Analytics" },
+      ]
+    : user?.role === "officer"
+    ? [
+        { href: "/officer", label: "Officer Dashboard" },
+        { href: "/officer?tab=assigned", label: "Assigned Issues" },
+      ]
+    : publicLinks; // citizen
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
@@ -51,17 +71,19 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/report" className="hidden sm:block">
-            <Button size="sm">Report an issue</Button>
-          </Link>
+          {showReportButton && (
+            <Link href="/report" className="hidden sm:block">
+              <Button size="sm">Report an issue</Button>
+            </Link>
+          )}
 
           {isAuthed ? (
             <div className="relative">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
-                className="flex items-center rounded-full p-0.5 transition hover:ring-2 hover:ring-primary/15"
+                className="flex items-center rounded-full p-0.5 transition hover:ring-2 hover:ring-primary/15 cursor-pointer"
               >
-                <Avatar src={user?.avatar} name={user?.name} size={34} />
+                <Avatar src={user?.avatar} name={cleanName(user?.name, user?.email)} size={34} />
               </button>
               <AnimatePresence>
                 {menuOpen && (
@@ -78,18 +100,36 @@ export default function Navbar() {
                     >
                       <div className="border-b border-line px-3 py-2.5">
                         <p className="truncate text-sm font-semibold text-ink">
-                          {user?.name}
+                          {cleanName(user?.name, user?.email)}
                         </p>
                         <p className="truncate text-xs text-ink-faint">
                           {user?.email}
                         </p>
-                        <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
-                          <Trophy size={13} />
-                          {user?.heroPoints ?? 0} points
-                        </div>
+                        {user?.role === "citizen" && (
+                          <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
+                            <Trophy size={13} />
+                            {user?.heroPoints ?? 0} points
+                          </div>
+                        )}
+                        {user?.role === "officer" && (
+                          <div className="mt-2 text-xs font-semibold text-primary">
+                            Officer · {user?.department}
+                          </div>
+                        )}
+                        {user?.role === "admin" && (
+                          <div className="mt-2 text-xs font-semibold text-primary">
+                            Admin Account
+                          </div>
+                        )}
                       </div>
                       <Link
-                        href="/dashboard"
+                        href={
+                          user?.role === "admin"
+                            ? "/admin"
+                            : user?.role === "officer"
+                            ? "/officer"
+                            : "/dashboard"
+                        }
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-soft hover:bg-primary-50"
                       >
@@ -100,7 +140,7 @@ export default function Navbar() {
                           setMenuOpen(false);
                           signOut();
                         }}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-danger hover:bg-danger-50"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-danger hover:bg-danger-50 cursor-pointer"
                       >
                         <LogOut size={15} /> Sign out
                       </button>
@@ -116,7 +156,7 @@ export default function Navbar() {
           )}
 
           <button
-            className="rounded-md p-2 text-ink-soft md:hidden"
+            className="rounded-md p-2 text-ink-soft md:hidden cursor-pointer"
             onClick={() => setMobileOpen((o) => !o)}
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -143,9 +183,11 @@ export default function Navbar() {
                   {l.label}
                 </Link>
               ))}
-              <Link href="/report" onClick={() => setMobileOpen(false)}>
-                <Button className="mt-2 w-full">Report an issue</Button>
-              </Link>
+              {showReportButton && (
+                <Link href="/report" onClick={() => setMobileOpen(false)}>
+                  <Button className="mt-2 w-full">Report an issue</Button>
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

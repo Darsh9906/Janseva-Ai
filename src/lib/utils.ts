@@ -4,6 +4,8 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/** Haversine distance in metres between two lat/lng points. */
 export function distanceMeters(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number }
@@ -19,6 +21,8 @@ export function distanceMeters(
     Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
+
+/** Relative "2h ago" style time from a millisecond timestamp. */
 export function timeAgo(ms: number): string {
   const diff = Date.now() - ms;
   const s = Math.floor(diff / 1000);
@@ -34,9 +38,23 @@ export function timeAgo(ms: number): string {
   return `${Math.floor(mo / 12)}y ago`;
 }
 
+export function cleanName(name?: string | null, email?: string | null): string {
+  if (name && name !== "Anonymous Hero") {
+    return name;
+  }
+  if (email) {
+    const prefix = email.split("@")[0];
+    if (prefix) {
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    }
+  }
+  return "Anonymous Hero";
+}
+
 export function initials(name?: string | null) {
   if (!name) return "?";
-  return name
+  const targetName = name === "Anonymous Hero" ? "Anonymous" : name;
+  return targetName
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
