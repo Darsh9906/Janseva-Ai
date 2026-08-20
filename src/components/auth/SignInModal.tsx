@@ -27,7 +27,7 @@ export default function SignInModal() {
     try {
       await signInWithGoogle();
     } catch (e) {
-      console.error(e);
+      console.warn(e);
       setAuthError("Failed to authenticate with Google. Please try again.");
     } finally {
       setLoading(false);

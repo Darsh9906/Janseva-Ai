@@ -71,7 +71,7 @@ export default function AuthPage() {
     try {
       await signInWithGoogle();
     } catch (e) {
-      console.error(e);
+      console.warn(e);
       setLocalErr("Social sign-in failed. Please try again.");
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ export default function AuthPage() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err: any) {
-      console.error(err);
+      console.warn(err);
       let msg = err.message || "Authentication failed.";
       if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
         msg = "Invalid email or password.";
