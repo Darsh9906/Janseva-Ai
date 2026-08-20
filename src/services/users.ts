@@ -18,17 +18,28 @@ import type { User as FirebaseUser } from "firebase/auth";
 
 const USERS = "users";
 
-
-export async function ensureUserProfile(fbUser: FirebaseUser): Promise<AppUser> {
+/** Create the user profile on first sign-in, or return the existing one. */
+export async function ensureUserProfile(
+  fbUser: FirebaseUser,
+  displayName?: string
+): Promise<AppUser> {
   const ref = doc(db, USERS, fbUser.uid);
   const snap = await getDoc(ref);
 
+  const customName = displayName || fbUser.displayName;
+
   if (snap.exists()) {
-    return { id: snap.id, ...(snap.data() as Omit<AppUser, "id">) };
+    const data = snap.data() as Omit<AppUser, "id">;
+    // Self-healing: if the record was saved as Anonymous Hero but we now have a real name, update it!
+    if (data.name === "Anonymous Hero" && customName && customName !== "Anonymous Hero") {
+      await updateDoc(ref, { name: customName });
+      return { id: snap.id, ...data, name: customName };
+    }
+    return { id: snap.id, ...data };
   }
 
   const profile: Omit<AppUser, "id"> = {
-    name: fbUser.displayName ?? "Anonymous Hero",
+    name: customName || "Anonymous Hero",
     email: fbUser.email ?? "",
     avatar: fbUser.photoURL ?? null,
     heroPoints: 0,
@@ -68,12 +79,12 @@ export async function setRole(userId: string, role: Role) {
   await updateDoc(doc(db, USERS, userId), { role });
 }
 
-
+/** Promote a user to an officer of a specific department. */
 export async function setOfficer(userId: string, department: string) {
   await updateDoc(doc(db, USERS, userId), { role: "officer", department });
 }
 
-
+/** All officers/admins (for assignment pickers). Small scale → no index. */
 export async function listOfficers(): Promise<AppUser[]> {
   const snap = await getDocs(collection(db, USERS));
   return snap.docs
@@ -81,12 +92,19 @@ export async function listOfficers(): Promise<AppUser[]> {
     .filter((u) => u.role === "officer" || u.role === "admin");
 }
 
+/** Retrieve all users in the system (for Admin's Officer Management view). */
+export async function listAllUsers(): Promise<AppUser[]> {
+  const snap = await getDocs(collection(db, USERS));
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<AppUser, "id">) }));
+}
+
 export async function getLeaderboard(max = 25): Promise<AppUser[]> {
   const q = query(
     collection(db, USERS),
-    orderBy("heroPoints", "desc"),
-    limit(max)
+    orderBy("heroPoints", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<AppUser, "id">) }));
+  const all = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<AppUser, "id">) }));
+  return all.filter((u) => u.role === "citizen").slice(0, max);
 }
+

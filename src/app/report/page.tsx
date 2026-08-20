@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -49,6 +49,13 @@ export default function ReportPage() {
   const router = useRouter();
   const { user, isAuthed, signIn } = useAuth();
   const geo = useGeolocation();
+
+  // Redirect staff users away from reporting page
+  useEffect(() => {
+    if (isAuthed && user && (user.role === "admin" || user.role === "officer")) {
+      router.push(user.role === "admin" ? "/admin" : "/officer");
+    }
+  }, [isAuthed, user, router]);
 
   const [file, setFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -104,7 +111,7 @@ export default function ReportPage() {
     setError(null);
     setSubmitting(true);
     try {
-      
+      // duplicate detection within 120m of same category
       if (!skipDupCheck) {
         const nearby = await findNearbyIssues(
           geo.coords.lat,
@@ -119,8 +126,8 @@ export default function ReportPage() {
         }
       }
 
-      
-      
+      // Store a compressed photo straight in Firestore (no Storage needed).
+      // Videos can't fit a Firestore doc, so they're saved without media.
       const isImage = file.type.startsWith("image");
       const imageUrl = isImage
         ? await compressImageToDataUrl(file)
@@ -153,7 +160,7 @@ export default function ReportPage() {
     }
   };
 
-  
+  // ---- gates ----
   if (!firebaseEnabled) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20">

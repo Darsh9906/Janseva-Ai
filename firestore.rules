@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // ============================================================
-// JanSeva AI — Firestore security rules
+// CivicHero AI — Firestore security rules
 // Deploy: firebase deploy --only firestore:rules
 // ============================================================
 service cloud.firestore {
@@ -19,13 +19,20 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['officer', 'admin'];
     }
 
+    function isAdmin() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Users: public read (leaderboard); a user creates/edits only their own
     // profile. Hero points / roles are adjusted by trusted writes; tighten
     // further with Cloud Functions for production.
     match /users/{userId} {
       allow read: if true;
-      allow create: if isSelf(userId);
-      allow update: if isSelf(userId) || isOfficer();
+      allow create: if isSelf(userId) && request.resource.data.role == 'citizen';
+      allow update: if (isSelf(userId) || isOfficer()) && 
+        (isAdmin() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'department']));
       allow delete: if false;
     }
 
@@ -35,9 +42,16 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid;
-      allow update: if signedIn();
+      allow update: if signedIn() && (
+        request.auth.uid == resource.data.createdBy || 
+        isOfficer() || 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'title', 'description', 'category', 'severity', 'latitude', 'longitude', 'address', 'imageUrl', 'mediaType', 'createdBy', 'createdByName', 'assignedTo', 'assignedOfficerName', 'resolvedBy', 'resolutionNote'
+        ]))
+      );
       allow delete: if isOfficer();
     }
+
 
     // Verifications: one vote document per user; readable by all.
     match /verifications/{id} {
