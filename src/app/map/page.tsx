@@ -2,28 +2,31 @@
 
 import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const IssueMap = dynamic(() => import("@/components/map/IssueMap"), {
   ssr: false,
 });
 
-const legend = [
-  { color: "#10b981", label: "Low" },
-  { color: "#f59e0b", label: "Medium" },
-  { color: "#ef4444", label: "High" },
-  { color: "#b91c1c", label: "Critical" },
-];
-
 export default function MapPage() {
+  const { t } = useTranslation();
+
+  const legend = [
+    { color: "#10b981", label: t("common.low") },
+    { color: "#f59e0b", label: t("common.medium") },
+    { color: "#ef4444", label: t("common.high") },
+    { color: "#b91c1c", label: t("common.critical") },
+  ];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            <MapPin className="text-primary" /> Community Map
+            <MapPin className="text-primary" /> {t("nav.map")}
           </h1>
           <p className="mt-2 text-ink-soft">
-            Live civic issues across your city, colour-coded by severity.
+            {t("issues.desc")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

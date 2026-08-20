@@ -1,6 +1,9 @@
+"use client";
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Severity, IssueStatus, VerificationStatus } from "@/types";
 
 const badgeVariants = cva(
@@ -35,10 +38,22 @@ const severityTone: Record<Severity, BadgeProps["tone"]> = {
 };
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
+  const { t } = useTranslation();
+
+  const getTranslatedSeverity = (sev: Severity) => {
+    switch (sev) {
+      case "Low": return t("common.low");
+      case "Medium": return t("common.medium");
+      case "High": return t("common.high");
+      case "Critical": return t("common.critical");
+      default: return sev;
+    }
+  };
+
   return (
     <Badge tone={severityTone[severity]}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {severity}
+      {getTranslatedSeverity(severity)}
     </Badge>
   );
 }
@@ -52,7 +67,20 @@ const statusTone: Record<IssueStatus, BadgeProps["tone"]> = {
 };
 
 export function StatusBadge({ status }: { status: IssueStatus }) {
-  return <Badge tone={statusTone[status]}>{status}</Badge>;
+  const { t } = useTranslation();
+
+  const getTranslatedStatus = (st: IssueStatus) => {
+    switch (st) {
+      case "Reported": return t("common.reported");
+      case "Verified": return t("common.verified");
+      case "Assigned": return t("common.assigned");
+      case "In Progress": return t("common.inProgress");
+      case "Resolved": return t("common.resolved");
+      default: return st;
+    }
+  };
+
+  return <Badge tone={statusTone[status]}>{getTranslatedStatus(status)}</Badge>;
 }
 
 const verifyTone: Record<VerificationStatus, BadgeProps["tone"]> = {
@@ -66,5 +94,16 @@ export function VerificationBadge({
 }: {
   status: VerificationStatus;
 }) {
-  return <Badge tone={verifyTone[status]}>{status}</Badge>;
+  const { t } = useTranslation();
+
+  const getTranslatedVerification = (v: VerificationStatus) => {
+    switch (v) {
+      case "Verified": return t("common.verified");
+      case "Likely Verified": return t("common.likelyVerified") === "common.likelyVerified" ? "Likely Verified" : t("common.likelyVerified");
+      case "Needs Review": return t("common.needsReview") === "common.needsReview" ? "Needs Review" : t("common.needsReview");
+      default: return v;
+    }
+  };
+
+  return <Badge tone={verifyTone[status]}>{getTranslatedVerification(status)}</Badge>;
 }

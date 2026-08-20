@@ -12,6 +12,7 @@ import { Skeleton, EmptyState } from "@/components/ui/Feedback";
 import { getLeaderboard } from "@/services/users";
 import { BADGES, tierFromPoints, rankLabel } from "@/services/gamification";
 import { cn, cleanName } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { AppUser } from "@/types";
 
 const PODIUM_META = [
@@ -45,6 +46,7 @@ const PODIUM_META = [
 ] as const;
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,6 +70,10 @@ export default function LeaderboardPage() {
   const podium = users.slice(0, 3);
   const rest = users.slice(3);
 
+  const getPointsLabel = () => {
+    return t("leaderboard.points", { count: "" }).replace("pts", "points").replace("अंक", "अंक").trim();
+  };
+
   return (
     <div className="min-h-screen px-5 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-4xl">
@@ -80,14 +86,13 @@ export default function LeaderboardPage() {
         >
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
             <Trophy className="h-3.5 w-3.5" />
-            Hero Rankings
+            {t("nav.leaderboard")}
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Community <span className="text-gradient">Leaderboard</span>
+            {t("leaderboard.title")}
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft sm:text-base">
-            Celebrating the citizens making their neighborhoods better, one
-            report at a time.
+            {t("leaderboard.subtitle")}
           </p>
         </motion.div>
 
@@ -109,7 +114,7 @@ export default function LeaderboardPage() {
               description="Be the first to make an impact. Report a civic issue to earn Hero Points and claim the top spot."
               action={
                 <a href="/report">
-                  <Button variant="primary">Report an issue</Button>
+                  <Button variant="primary">{t("nav.reportIssue")}</Button>
                 </a>
               }
             />
@@ -169,7 +174,7 @@ export default function LeaderboardPage() {
                           {u.heroPoints.toLocaleString()}
                         </p>
                         <p className="text-xs font-medium text-ink-faint">
-                          Hero Points · {rankLabel(i)}
+                          {getPointsLabel()} · {rankLabel(i)}
                         </p>
                       </CardContent>
                     </Card>
@@ -206,7 +211,7 @@ export default function LeaderboardPage() {
                               </Badge>
                               {typeof u.reportsCount === "number" && (
                                 <span className="text-xs text-ink-faint">
-                                  {u.reportsCount} reports
+                                  {t("leaderboard.reports", { count: u.reportsCount })}
                                 </span>
                               )}
                               {(u.badges ?? []).slice(0, 2).map((b) => (
@@ -224,8 +229,8 @@ export default function LeaderboardPage() {
                             <p className="text-base font-bold text-primary">
                               {u.heroPoints.toLocaleString()}
                             </p>
-                            <p className="text-[10px] font-medium text-ink-faint">
-                              points
+                            <p className="text-[10px] font-medium text-ink-faint capitalize">
+                              {getPointsLabel()}
                             </p>
                           </div>
                         </CardContent>
@@ -248,7 +253,7 @@ export default function LeaderboardPage() {
           <div className="mb-4 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold tracking-tight text-ink">
-              Badges to earn
+              {t("leaderboard.badges")}
             </h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

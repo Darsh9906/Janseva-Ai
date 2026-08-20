@@ -22,6 +22,7 @@ import { SeverityBadge, Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/Feedback";
 import { compressImageToDataUrl } from "@/lib/image";
 import { createIssue, findNearbyIssues } from "@/services/issues";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { VisionAnalysis, IssueCategory, Issue } from "@/types";
 import { firebaseEnabled } from "@/lib/firebase";
 
@@ -46,11 +47,11 @@ const toBase64 = (file: File) =>
   });
 
 export default function ReportPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user, isAuthed, signIn } = useAuth();
   const geo = useGeolocation();
 
-  // Redirect staff users away from reporting page
   useEffect(() => {
     if (isAuthed && user && (user.role === "admin" || user.role === "officer")) {
       router.push(user.role === "admin" ? "/admin" : "/officer");
@@ -71,9 +72,9 @@ export default function ReportPage() {
   const [manualLng, setManualLng] = useState("");
 
   const handleAnalyze = async () => {
-    if (!file) return setError("Please upload a photo first.");
+    if (!file) return setError(t("report.errPhoto"));
     if (file.type.startsWith("video")) {
-      setError("AI analysis runs on photos. For video, pick a category below.");
+      setError(t("report.errVideo"));
       return;
     }
     setError(null);
@@ -104,14 +105,13 @@ export default function ReportPage() {
 
   const handleSubmit = async (skipDupCheck = false) => {
     if (!user) return signIn();
-    if (!file) return setError("Please upload a photo.");
-    if (!geo.coords) return setError("Please detect or set the location.");
-    if (!title.trim()) return setError("Please add a title.");
+    if (!file) return setError(t("report.errNoPhoto"));
+    if (!geo.coords) return setError(t("report.errNoLoc"));
+    if (!title.trim()) return setError(t("report.errNoTitle"));
 
     setError(null);
     setSubmitting(true);
     try {
-      // duplicate detection within 120m of same category
       if (!skipDupCheck) {
         const nearby = await findNearbyIssues(
           geo.coords.lat,
@@ -126,8 +126,6 @@ export default function ReportPage() {
         }
       }
 
-      // Store a compressed photo straight in Firestore (no Storage needed).
-      // Videos can't fit a Firestore doc, so they're saved without media.
       const isImage = file.type.startsWith("image");
       const imageUrl = isImage
         ? await compressImageToDataUrl(file)
@@ -155,12 +153,24 @@ export default function ReportPage() {
       router.push(`/issues/${id}`);
     } catch (e) {
       console.error(e);
-      setError("Could not submit the report. Please try again.");
+      setError(t("report.errSubmit"));
       setSubmitting(false);
     }
   };
 
-  // ---- gates ----
+  const getTranslatedCategory = (id: string) => {
+    switch (id) {
+      case "Pothole": return t("common.pothole");
+      case "Water Leakage": return t("common.waterLeakage");
+      case "Streetlight": return t("common.streetlight");
+      case "Waste Management": return t("common.wasteManagement");
+      case "Road Damage": return t("common.roadDamage");
+      case "Drainage": return t("common.drainage");
+      case "Public Safety": return t("common.publicSafety");
+      default: return t("common.other");
+    }
+  };
+
   if (!firebaseEnabled) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-20">
@@ -178,9 +188,9 @@ export default function ReportPage() {
       <div className="mx-auto max-w-2xl px-6 py-20">
         <EmptyState
           icon={<ShieldCheck />}
-          title="Sign in to report an issue"
-          description="We attribute every report to a citizen for accountability and to award Hero Points."
-          action={<Button onClick={signIn}>Sign in with Google</Button>}
+          title={t("nav.signIn")}
+          description={t("auth.citizenSignDesc")}
+          action={<Button onClick={signIn}>{t("auth.google")}</Button>}
         />
       </div>
     );
@@ -193,18 +203,17 @@ export default function ReportPage() {
           <Sparkles size={14} /> AI Vision Agent
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          Report a community issue
+          {t("report.title")}
         </h1>
         <p className="mt-2 text-ink-soft">
-          Upload a photo — our AI handles the rest.
+          {t("report.desc")}
         </p>
       </div>
 
       <div className="mt-10 space-y-6">
-        {/* 1. media */}
         <Card>
           <CardContent className="p-5 sm:p-6">
-            <Step n={1} label="Upload photo or video" />
+            <Step n={1} label={t("report.uploadStep")} />
             <div className="mt-4">
               <MediaUpload
                 onSelect={(f) => {
@@ -221,18 +230,17 @@ export default function ReportPage() {
                 onClick={handleAnalyze}
               >
                 {!analyzing && <Sparkles size={16} />}
-                {analysis ? "Re-analyze with AI" : "Analyze with AI"}
+                {analysis ? t("report.reanalyze") : t("report.analyze")}
               </Button>
             )}
           </CardContent>
         </Card>
 
-        {/* AI result */}
         {analyzing && (
           <Card>
             <CardContent className="flex items-center gap-3 p-6 text-ink-soft">
               <Loader2 className="animate-spin text-primary" size={20} />
-              The Vision Agent is inspecting your photo…
+              {t("report.analyzing")}
             </CardContent>
           </Card>
         )}
@@ -245,30 +253,29 @@ export default function ReportPage() {
               <CardContent className="p-5 sm:p-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone="blue">
-                    <Sparkles size={12} /> AI analysis
+                    <Sparkles size={12} /> {t("report.aiAnalysis")}
                   </Badge>
                   <SeverityBadge severity={analysis.severity} />
-                  <Badge tone="slate">{analysis.confidence}% confidence</Badge>
+                  <Badge tone="slate">{t("report.confidence", { pct: analysis.confidence })}</Badge>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-ink">
                   {analysis.title}
                 </h3>
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  <Mini label="Department" value={analysis.department} icon={<Building2 size={14} />} />
-                  <Mini label="Risk score" value={`${analysis.risk_score}/10`} />
-                  <Mini label="Est. cost" value={analysis.estimated_cost} />
-                  <Mini label="Est. fix time" value={analysis.estimated_fix_time} />
-                  <Mini label="Category" value={analysis.category} />
+                  <Mini label={t("nav.officer")} value={analysis.department} icon={<Building2 size={14} />} />
+                  <Mini label={t("detail.riskScore")} value={`${analysis.risk_score}/10`} />
+                  <Mini label={t("detail.estCost")} value={analysis.estimated_cost} />
+                  <Mini label={t("detail.estTime")} value={analysis.estimated_fix_time} />
+                  <Mini label={t("report.fieldCategory")} value={getTranslatedCategory(analysis.category)} />
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         )}
 
-        {/* 2. location */}
         <Card>
           <CardContent className="p-5 sm:p-6">
-            <Step n={2} label="Location" />
+            <Step n={2} label={t("report.locationStep")} />
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
                 variant={geo.coords ? "outline" : "primary"}
@@ -276,7 +283,7 @@ export default function ReportPage() {
                 onClick={geo.detect}
               >
                 {!geo.loading && <MapPin size={16} />}
-                {geo.coords ? "Re-detect location" : "Detect my location"}
+                {geo.coords ? t("report.redetectLoc") : t("report.detectLoc")}
               </Button>
               {geo.coords && (
                 <div className="flex items-center gap-2 text-sm text-secondary">
@@ -301,23 +308,13 @@ export default function ReportPage() {
               onClick={() => setManualOpen((o) => !o)}
               className="mt-3 text-sm font-medium text-primary hover:underline"
             >
-              {manualOpen ? "Hide manual entry" : "Set location manually"}
+              {manualOpen ? t("report.hideManual") : t("report.setManual")}
             </button>
 
             {manualOpen && (
               <div className="mt-3 rounded-xl border border-line bg-slate-50 p-4">
                 <p className="text-xs text-ink-soft">
-                  Tip: open{" "}
-                  <a
-                    href="https://www.google.com/maps"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    Google Maps
-                  </a>
-                  , right-click the spot → click the coordinates to copy, then
-                  paste them here.
+                  {t("report.manualTip")}
                 </p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <Input
@@ -345,11 +342,11 @@ export default function ReportPage() {
                       ) {
                         geo.setManual(lat, lng);
                       } else {
-                        setError("Enter valid latitude and longitude values.");
+                        setError(t("report.errManualLoc"));
                       }
                     }}
                   >
-                    Use
+                    {t("report.use")}
                   </Button>
                 </div>
               </div>
@@ -357,20 +354,19 @@ export default function ReportPage() {
           </CardContent>
         </Card>
 
-        {/* 3. details */}
         <Card>
           <CardContent className="space-y-4 p-5 sm:p-6">
-            <Step n={3} label="Confirm details" />
+            <Step n={3} label={t("report.detailsStep")} />
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Title</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink">{t("report.fieldTitle")}</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Large pothole near the bus stop"
+                placeholder={t("report.titlePlaceholder")}
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Category</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink">{t("report.fieldCategory")}</label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((c) => (
                   <button
@@ -382,37 +378,34 @@ export default function ReportPage() {
                         : "border-line bg-white text-ink-soft hover:border-primary/40"
                     }`}
                   >
-                    {c}
+                    {getTranslatedCategory(c)}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Description</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink">{t("report.fieldDesc")}</label>
               <Textarea
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the issue…"
+                placeholder={t("report.descPlaceholder")}
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* duplicate warning */}
         {duplicates.length > 0 && (
           <Card>
             <CardContent className="p-5 sm:p-6">
               <div className="flex items-center gap-2 text-warning">
                 <AlertTriangle size={18} />
                 <h3 className="font-semibold">
-                  {duplicates.length} similar report
-                  {duplicates.length > 1 ? "s" : ""} nearby
+                  {t("report.duplicatesTitle", { count: duplicates.length })}
                 </h3>
               </div>
               <p className="mt-1 text-sm text-ink-soft">
-                Help avoid duplicates — you can open an existing report and verify
-                it instead, or submit anyway if yours is different.
+                {t("report.duplicatesDesc")}
               </p>
               <div className="mt-3 space-y-2">
                 {duplicates.slice(0, 3).map((d) => (
@@ -428,14 +421,14 @@ export default function ReportPage() {
               </div>
               <div className="mt-4 flex gap-2">
                 <Button variant="outline" onClick={() => setDuplicates([])}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   variant="danger"
                   loading={submitting}
                   onClick={() => handleSubmit(true)}
                 >
-                  Submit anyway
+                  {t("report.submitAnyway")}
                 </Button>
               </div>
             </CardContent>
@@ -455,7 +448,7 @@ export default function ReportPage() {
             loading={submitting}
             onClick={() => handleSubmit(false)}
           >
-            Submit report &amp; earn Hero Points
+            {t("report.submitBtn")}
           </Button>
         )}
       </div>

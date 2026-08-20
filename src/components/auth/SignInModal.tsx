@@ -7,8 +7,10 @@ import { FcGoogle } from "react-icons/fc";
 import { useAuthStore } from "@/store/authStore";
 import { signInWithGoogle } from "./AuthProvider";
 import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function SignInModal() {
+  const { t } = useTranslation();
   const {
     signInOpen,
     closeSignIn,
@@ -24,7 +26,6 @@ export default function SignInModal() {
     setAuthError(null);
     try {
       await signInWithGoogle();
-      // On success, AuthProvider will set the user and close the sign-in modal
     } catch (e) {
       console.error(e);
       setAuthError("Failed to authenticate with Google. Please try again.");
@@ -41,6 +42,12 @@ export default function SignInModal() {
   const handleBack = () => {
     setSelectedRole(null);
     setAuthError(null);
+  };
+
+  const getRoleLabel = (role: "citizen" | "officer" | "admin") => {
+    if (role === "citizen") return t("auth.citizen");
+    if (role === "officer") return t("auth.officer");
+    return t("auth.admin");
   };
 
   return (
@@ -75,10 +82,10 @@ export default function SignInModal() {
             {!selectedRole ? (
               <>
                 <h2 className="display mt-5 text-3xl text-ink">
-                  Welcome to JanSeva
+                  {t("auth.welcome")}
                 </h2>
                 <p className="mt-1.5 text-sm text-ink-soft">
-                  Choose how you want to continue
+                  {t("auth.chooseRole")}
                 </p>
 
                 <div className="mt-6 space-y-3">
@@ -90,9 +97,9 @@ export default function SignInModal() {
                       <User size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-ink">Citizen</p>
+                      <p className="font-semibold text-ink">{t("auth.citizen")}</p>
                       <p className="text-xs text-ink-soft mt-0.5">
-                        Report and track civic issues
+                        {t("auth.citizenDesc")}
                       </p>
                     </div>
                   </button>
@@ -105,9 +112,9 @@ export default function SignInModal() {
                       <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-ink">Officer</p>
+                      <p className="font-semibold text-ink">{t("auth.officer")}</p>
                       <p className="text-xs text-ink-soft mt-0.5">
-                        Manage assigned civic issues
+                        {t("auth.officerDesc")}
                       </p>
                     </div>
                   </button>
@@ -120,9 +127,9 @@ export default function SignInModal() {
                       <ShieldAlert size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-ink">Admin</p>
+                      <p className="font-semibold text-ink">{t("auth.admin")}</p>
                       <p className="text-xs text-ink-soft mt-0.5">
-                        Manage and assign civic issues
+                        {t("auth.adminDesc")}
                       </p>
                     </div>
                   </button>
@@ -134,16 +141,16 @@ export default function SignInModal() {
                   onClick={handleBack}
                   className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline cursor-pointer"
                 >
-                  <ArrowLeft size={16} /> Back to roles
+                  <ArrowLeft size={16} /> {t("auth.back")}
                 </button>
 
                 <h2 className="display mt-5 text-3xl text-ink capitalize">
-                  Sign in as {selectedRole}
+                  {t("auth.signInAs", { role: getRoleLabel(selectedRole) })}
                 </h2>
                 <p className="mt-1.5 text-sm text-ink-soft">
                   {selectedRole === "citizen"
-                    ? "Join the civic community to report problems and track resolution."
-                    : "Access authorized operations panels. Credentials verified server-side."}
+                    ? t("auth.citizenSignDesc")
+                    : t("auth.staffSignDesc")}
                 </p>
 
                 {authError && (
@@ -160,14 +167,13 @@ export default function SignInModal() {
                   className="mt-6 w-full"
                 >
                   {!loading && <FcGoogle size={20} />}
-                  Continue with Google
+                  {t("auth.google")}
                 </Button>
               </>
             )}
 
             <p className="mt-6 text-center text-xs text-ink-faint">
-              By continuing you agree to participate respectfully in your local
-              community.
+              {t("auth.agreement")}
             </p>
           </motion.div>
         </motion.div>

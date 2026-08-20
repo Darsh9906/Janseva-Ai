@@ -8,24 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { listIssues } from "@/services/issues";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
 }
-
-const SUGGESTIONS = [
-  "Show unresolved issues near me",
-  "Which area has the most potholes?",
-  "How many issues are resolved?",
-];
-
-const WELCOME: ChatMessage = {
-  id: "welcome",
-  role: "assistant",
-  text: "Hi! I'm your JanSeva Assistant. Ask me anything about the issues reported in your community.",
-};
 
 let messageSeq = 0;
 const nextId = () => `m-${Date.now()}-${messageSeq++}`;
@@ -46,12 +35,34 @@ function TypingDots() {
 }
 
 export default function CivicAssistant() {
+  const { t, lang } = useTranslation();
   const [open, setOpen] = React.useState(false);
-  const [messages, setMessages] = React.useState<ChatMessage[]>([WELCOME]);
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Initialize and update welcome message when language changes
+  React.useEffect(() => {
+    setMessages((prev) => {
+      const welcomeMsg = {
+        id: "welcome",
+        role: "assistant" as const,
+        text: t("chat.welcome"),
+      };
+      if (prev.length === 0) {
+        return [welcomeMsg];
+      }
+      return prev.map((m) => (m.id === "welcome" ? welcomeMsg : m));
+    });
+  }, [lang, t]);
+
+  const suggestions = React.useMemo(() => [
+    t("chat.suggest1"),
+    t("chat.suggest2"),
+    t("chat.suggest3"),
+  ], [t]);
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -87,7 +98,7 @@ export default function CivicAssistant() {
         const text =
           data.answer ??
           data.error ??
-          "Sorry, I couldn't process that right now. Please try again.";
+          t("chat.errorProcess");
         setMessages((prev) => [
           ...prev,
           { id: nextId(), role: "assistant", text },
@@ -98,14 +109,14 @@ export default function CivicAssistant() {
           {
             id: nextId(),
             role: "assistant",
-            text: "Sorry, I couldn't reach the assistant. Please try again.",
+            text: t("chat.errorReach"),
           },
         ]);
       } finally {
         setLoading(false);
       }
     },
-    [loading]
+    [loading, t]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -132,10 +143,10 @@ export default function CivicAssistant() {
                   <Sparkles className="h-4 w-4" />
                 </span>
                 <div className="leading-tight">
-                  <p className="text-sm font-semibold text-ink">JanSeva Assistant</p>
+                  <p className="text-sm font-semibold text-ink">{t("chat.title")}</p>
                   <span className="flex items-center gap-1.5 text-xs text-ink-soft">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Online
+                    {t("chat.online")}
                   </span>
                 </div>
               </div>
@@ -183,7 +194,7 @@ export default function CivicAssistant() {
               {/* Suggestion chips — only before the first user message */}
               {messages.length === 1 && !loading && (
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {SUGGESTIONS.map((s) => (
+                  {suggestions.map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -205,7 +216,7 @@ export default function CivicAssistant() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about civic issues..."
+                placeholder={t("chat.placeholder")}
                 aria-label="Message the assistant"
                 disabled={loading}
                 className="h-10 bg-white/80"
@@ -219,6 +230,7 @@ export default function CivicAssistant() {
                 <Send className="h-4 w-4" />
               </Button>
             </form>
+
           </motion.div>
         )}
       </AnimatePresence>

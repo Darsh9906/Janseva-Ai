@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton, EmptyState } from "@/components/ui/Feedback";
 import { firebaseEnabled } from "@/lib/firebase";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 
 type Filter = "All" | IssueStatus;
 
 export default function IssuesPage() {
+  const { t } = useTranslation();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("All");
@@ -44,20 +46,33 @@ export default function IssuesPage() {
     });
   }, [issues, filter, search]);
 
+  const getTranslatedStatus = (status: string) => {
+    switch (status) {
+      case "All": return t("common.all") === "common.all" ? "All" : t("common.all");
+      case "Reported": return t("common.reported");
+      case "Verified": return t("common.verified");
+      case "Assigned": return t("common.assigned");
+      case "In Progress": return t("common.inProgress");
+      case "Working": return t("common.working");
+      case "Resolved": return t("common.resolved");
+      default: return status;
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Community Issues
+            {t("issues.title")}
           </h1>
           <p className="mt-2 text-ink-soft">
-            Every report from your community, live.
+            {t("issues.desc")}
           </p>
         </div>
         <Link href="/report">
           <Button>
-            <Plus size={16} /> Report Issue
+            <Plus size={16} /> {t("nav.reportIssue")}
           </Button>
         </Link>
       </div>
@@ -72,7 +87,7 @@ export default function IssuesPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, category or area…"
+            placeholder={t("issues.searchPlaceholder")}
             className="pl-10"
           />
         </div>
@@ -88,7 +103,7 @@ export default function IssuesPage() {
                   : "bg-white/70 text-ink-soft hover:bg-white"
               )}
             >
-              {f}
+              {getTranslatedStatus(f)}
             </button>
           ))}
         </div>
@@ -111,16 +126,16 @@ export default function IssuesPage() {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<Inbox />}
-            title={issues.length === 0 ? "No issues reported yet" : "No matches"}
+            title={issues.length === 0 ? t("issues.noIssues") : t("issues.noMatches")}
             description={
               issues.length === 0
-                ? "Be the first hero — report a civic issue in your area."
-                : "Try a different filter or search term."
+                ? t("issues.firstHero")
+                : t("issues.tryDifferent")
             }
             action={
               issues.length === 0 ? (
                 <Link href="/report">
-                  <Button>Report the first issue</Button>
+                  <Button>{t("issues.reportFirst")}</Button>
                 </Link>
               ) : undefined
             }

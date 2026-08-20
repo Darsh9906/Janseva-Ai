@@ -4,12 +4,14 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, X, Film } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   onSelect: (file: File | null) => void;
 }
 
 export default function MediaUpload({ onSelect }: Props) {
+  const { t } = useTranslation();
   const [preview, setPreview] = useState<string | null>(null);
   const [isVideo, setIsVideo] = useState(false);
 
@@ -63,7 +65,6 @@ export default function MediaUpload({ onSelect }: Props) {
             {isVideo ? (
               <video src={preview} className="h-full w-full object-contain" controls />
             ) : (
-              
               <img src={preview} alt="preview" className="h-full w-full object-contain" />
             )}
             <button
@@ -85,9 +86,9 @@ export default function MediaUpload({ onSelect }: Props) {
               <UploadCloud size={28} />
             </span>
             <p className="mt-4 text-base font-semibold text-ink">
-              {isDragActive ? "Drop it here" : "Upload a photo or video"}
+              {isDragActive ? t("report.dropHere") : t("report.uploadStep")}
             </p>
-            <p className="mt-1 text-sm">Drag &amp; drop, or click to browse</p>
+            <p className="mt-1 text-sm">{t("report.dragDrop")}</p>
             <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-faint">
               <Film size={13} /> JPG · PNG · WEBP · MP4
             </p>

@@ -39,11 +39,13 @@ import IssueCard from "@/components/issues/issueCard";
 import { Button } from "@/components/ui/Button";
 import { firebaseEnabled } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // green-leaning, harmonious status palette
 const STATUS_COLORS = ["#94a3b8", "#0f7a5c", "#b45309", "#d97706", "#16a34a"];
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user, isAuthed, loading: authLoading } = useAuth();
 
@@ -112,6 +114,35 @@ export default function DashboardPage() {
     return { total, resolved, pending };
   }, [myIssues]);
 
+  const getPointsLabel = () => {
+    return t("leaderboard.points", { count: "" }).replace("pts", "points").replace("अंक", "अंक").trim();
+  };
+
+  const getTranslatedCategory = (id: string) => {
+    switch (id) {
+      case "Pothole": return t("common.pothole");
+      case "Water Leakage": return t("common.waterLeakage");
+      case "Streetlight": return t("common.streetlight");
+      case "Waste Management": return t("common.wasteManagement");
+      case "Road Damage": return t("common.roadDamage");
+      case "Drainage": return t("common.drainage");
+      case "Public Safety": return t("common.publicSafety");
+      default: return t("common.other");
+    }
+  };
+
+  const getTranslatedStatus = (status: string) => {
+    switch (status) {
+      case "Reported": return t("common.reported");
+      case "Verified": return t("common.verified");
+      case "Assigned": return t("common.assigned");
+      case "Working": return t("common.working");
+      case "Resolved": return t("common.resolved");
+      case "In Progress": return t("common.inProgress");
+      default: return status;
+    }
+  };
+
   if (authLoading || (isAuthed && loading)) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-12">
@@ -137,8 +168,8 @@ export default function DashboardPage() {
             <LayoutDashboard className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl text-ink lg:text-4xl">Citizen Dashboard</h1>
-            <p className="text-sm text-ink-soft">Track your reports and view community impact.</p>
+            <h1 className="text-3xl text-ink lg:text-4xl">{t("nav.dashboard")}</h1>
+            <p className="text-sm text-ink-soft">{t("footer.desc")}</p>
           </div>
         </div>
 
@@ -152,7 +183,7 @@ export default function DashboardPage() {
                 : "text-ink-soft hover:text-ink"
             }`}
           >
-            My Activity
+            {t("nav.dashboard").split(" ")[0]}
           </button>
           <button
             onClick={() => setActiveTab("community")}
@@ -162,7 +193,7 @@ export default function DashboardPage() {
                 : "text-ink-soft hover:text-ink"
             }`}
           >
-            Community
+            {t("footer.community")}
           </button>
         </div>
       </div>
@@ -177,7 +208,7 @@ export default function DashboardPage() {
                   <FileText size={18} />
                 </div>
                 <p className="mt-3 text-3xl font-bold text-ink">{myMetrics.total}</p>
-                <p className="text-xs font-medium text-ink-faint">Reports Filed</p>
+                <p className="text-xs font-medium text-ink-faint">{t("landing.stats.filed")}</p>
               </CardContent>
             </Card>
 
@@ -187,7 +218,7 @@ export default function DashboardPage() {
                   <CheckCircle2 size={18} />
                 </div>
                 <p className="mt-3 text-3xl font-bold text-ink">{myMetrics.resolved}</p>
-                <p className="text-xs font-medium text-ink-faint">Resolved</p>
+                <p className="text-xs font-medium text-ink-faint">{t("common.resolved")}</p>
               </CardContent>
             </Card>
 
@@ -197,7 +228,7 @@ export default function DashboardPage() {
                   <Loader2 size={18} className="animate-spin-slow" />
                 </div>
                 <p className="mt-3 text-3xl font-bold text-ink">{myMetrics.pending}</p>
-                <p className="text-xs font-medium text-ink-faint">Pending Resolution</p>
+                <p className="text-xs font-medium text-ink-faint">{t("common.inProgress")}</p>
               </CardContent>
             </Card>
 
@@ -210,7 +241,7 @@ export default function DashboardPage() {
                   <p className="text-3xl font-bold text-ink">{user?.heroPoints ?? 0}</p>
                   <span className="text-xs font-semibold text-primary">Rank {myRank}</span>
                 </div>
-                <p className="text-xs font-medium text-ink-faint">Hero Points Earned</p>
+                <p className="text-xs font-medium text-ink-faint">{getPointsLabel()}</p>
               </CardContent>
             </Card>
           </div>
@@ -218,10 +249,10 @@ export default function DashboardPage() {
           {/* My Reports list */}
           <div className="mt-12">
             <div className="flex items-center justify-between border-b border-line pb-4">
-              <h2 className="display text-2xl text-ink">My Reported Issues</h2>
+              <h2 className="display text-2xl text-ink">{t("issues.title")}</h2>
               <Link href="/report">
                 <Button size="sm" className="flex items-center gap-1">
-                  <Plus size={15} /> Report New
+                  <Plus size={15} /> {t("nav.reportIssue").split(" ")[0]}
                 </Button>
               </Link>
             </div>
@@ -234,7 +265,7 @@ export default function DashboardPage() {
                   description="You haven't reported any civic issues yet. Help improve your community by filing your first report!"
                   action={
                     <Link href="/report">
-                      <Button>Report an issue</Button>
+                      <Button>{t("nav.reportIssue")}</Button>
                     </Link>
                   }
                 />
@@ -253,10 +284,10 @@ export default function DashboardPage() {
           {/* Metrics */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {[
-              { label: "Total reports", value: stats?.total ?? 0, icon: FileText },
-              { label: "Resolved", value: stats?.resolved ?? 0, icon: CheckCircle2 },
-              { label: "In progress", value: stats?.inProgress ?? 0, icon: Loader2 },
-              { label: "Resolution rate", value: `${stats?.resolutionRate ?? 0}%`, icon: TrendingUp },
+              { label: t("dashboard.totalReports"), value: stats?.total ?? 0, icon: FileText },
+              { label: t("common.resolved"), value: stats?.resolved ?? 0, icon: CheckCircle2 },
+              { label: t("common.inProgress"), value: stats?.inProgress ?? 0, icon: Loader2 },
+              { label: t("dashboard.verificationRate"), value: `${stats?.resolutionRate ?? 0}%`, icon: TrendingUp },
             ].map((m) => (
               <Card key={m.label}>
                 <CardContent className="p-5">
@@ -275,10 +306,10 @@ export default function DashboardPage() {
             <div className="mt-5 grid gap-5 lg:grid-cols-2">
               <Card>
                 <CardContent className="p-5 sm:p-6">
-                  <h2 className="font-semibold text-ink">Issues by category</h2>
+                  <h2 className="font-semibold text-ink">{t("dashboard.chartTitle")}</h2>
                   <div className="mt-4 h-72">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={stats.byCategory} margin={{ left: -18 }}>
+                      <BarChart data={stats.byCategory.map(c => ({ ...c, name: getTranslatedCategory(c.name) }))} margin={{ left: -18 }}>
                         <CartesianGrid vertical={false} stroke="#ebe8e1" strokeDasharray="3 3" />
                         <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#a2a09a" }} tickLine={false} axisLine={{ stroke: "#ebe8e1" }} interval={0} angle={-20} textAnchor="end" height={60} />
                         <YAxis tick={{ fontSize: 11, fill: "#a2a09a" }} tickLine={false} axisLine={false} allowDecimals={false} />
@@ -292,12 +323,12 @@ export default function DashboardPage() {
 
               <Card>
                 <CardContent className="p-5 sm:p-6">
-                  <h2 className="font-semibold text-ink">Status distribution</h2>
+                  <h2 className="font-semibold text-ink">{t("dashboard.triageTitle")}</h2>
                   <div className="mt-4 flex h-72 items-center">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={stats.byStatus.filter((s) => s.count > 0)}
+                          data={stats.byStatus.filter((s) => s.count > 0).map(s => ({ ...s, name: getTranslatedStatus(s.name) }))}
                           dataKey="count"
                           nameKey="name"
                           innerRadius={55}
@@ -316,7 +347,7 @@ export default function DashboardPage() {
                       {stats.byStatus.map((s, i) => (
                         <div key={s.name} className="flex items-center gap-2 text-sm">
                           <span className="h-3 w-3 rounded-full" style={{ background: STATUS_COLORS[i] }} />
-                          <span className="text-ink-soft">{s.name}</span>
+                          <span className="text-ink-soft">{getTranslatedStatus(s.name)}</span>
                           <span className="font-semibold text-ink">{s.count}</span>
                         </div>
                       ))}
@@ -333,7 +364,7 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-5 sm:p-6">
                   <h2 className="flex items-center gap-2 font-semibold text-ink">
-                    <Flame size={18} className="text-warning" /> Hotspot areas
+                    <Flame size={18} className="text-warning" /> {t("dashboard.hotspots")}
                   </h2>
                   <div className="mt-5 space-y-4">
                     {stats.hotspots.map((h, i) => (
@@ -359,11 +390,11 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-5 sm:p-6">
                   <h2 className="flex items-center gap-2 font-semibold text-ink">
-                    <Sparkles size={18} className="text-primary" /> AI insights
+                    <Sparkles size={18} className="text-primary" /> {t("dashboard.aiInsights")}
                   </h2>
                   {insights.length === 0 ? (
                     <p className="mt-4 text-sm text-ink-faint">
-                      Reading the latest reports…
+                      {t("dashboard.generatingInsights")}
                     </p>
                   ) : (
                     <ul className="mt-5 space-y-4">

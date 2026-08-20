@@ -44,7 +44,10 @@ import Timeline from "@/components/issues/Timeline";
 import { timeAgo } from "@/lib/utils";
 import { firebaseEnabled } from "@/lib/firebase";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 export default function IssueDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
 
   const { user, isAuthed, signIn, requireAuth } = useAuth();
@@ -164,8 +167,8 @@ export default function IssueDetailPage() {
       <div className="mx-auto max-w-2xl px-6 py-20">
         <EmptyState
           icon={<AlertTriangle />}
-          title="Issue not found"
-          description="It may have been removed, or Firebase isn’t configured yet."
+          title={t("detail.issueNotFound")}
+          description={t("detail.notFoundDesc")}
         />
       </div>
     );
@@ -235,7 +238,7 @@ export default function IssueDetailPage() {
                       name={issue.createdByName}
                       size={22}
                     />
-                    {issue.createdByName ?? "Anonymous"}
+                    {issue.createdByName ?? t("detail.anonymous")}
                   </span>
 
                   <span>
@@ -249,7 +252,7 @@ export default function IssueDetailPage() {
                     className="flex items-center gap-1 text-primary hover:underline"
                   >
                     <MapPin size={14} />
-                    View on map
+                    {t("detail.viewOnMap")}
                     <ExternalLink size={12} />
                   </a>
                 </div>
@@ -269,21 +272,21 @@ export default function IssueDetailPage() {
                     {issue.department && (
                       <Info
                         icon={<Building2 size={14} />}
-                        label="Department"
+                        label={t("detail.department")}
                         value={issue.department}
                       />
                     )}
 
                     {issue.estimatedCost && (
                       <Info
-                        label="Est. cost"
+                        label={t("detail.estCost")}
                         value={issue.estimatedCost}
                       />
                     )}
 
                     {issue.estimatedFixTime && (
                       <Info
-                        label="Est. fix time"
+                        label={t("detail.estTime")}
                         value={issue.estimatedFixTime}
                       />
                     )}
@@ -302,7 +305,7 @@ export default function IssueDetailPage() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <h2 className="font-semibold text-ink">
-                  Handling
+                  {t("detail.handling")}
                 </h2>
 
                 <div className="mt-3 space-y-2 text-sm">
@@ -312,12 +315,7 @@ export default function IssueDetailPage() {
                         size={15}
                         className="text-primary"
                       />
-
-                      Routed to{" "}
-
-                      <span className="font-medium text-ink">
-                        {issue.department}
-                      </span>
+                      {t("detail.routedTo", { dept: issue.department })}
                     </p>
                   )}
 
@@ -327,12 +325,7 @@ export default function IssueDetailPage() {
                         size={15}
                         className="text-primary"
                       />
-
-                      Assigned to{" "}
-
-                      <span className="font-medium text-ink">
-                        {issue.assignedOfficerName}
-                      </span>
+                      {t("detail.assignedTo", { officer: issue.assignedOfficerName })}
                     </p>
                   )}
                 </div>
@@ -340,7 +333,7 @@ export default function IssueDetailPage() {
                 {issue.resolutionNote && (
                   <div className="mt-4 rounded-xl bg-secondary-50 px-4 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-secondary">
-                      Resolved
+                      {t("common.resolved")}
                     </p>
 
                     <p className="mt-1 break-words text-sm text-ink">
@@ -360,27 +353,27 @@ export default function IssueDetailPage() {
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
                   <h2 className="font-semibold text-ink">
-                    Resolution Proof
+                    {t("detail.resolutionProof")}
                   </h2>
 
                   {issue.resolutionImage ? (
                     <Badge tone="green">
                       <CheckCircle2 size={12} />
-                      Resolution Verified
+                      {t("detail.resolutionVerified")}
                     </Badge>
                   ) : null}
                 </div>
 
                 {!issue.resolutionImage ? (
                   <p className="mt-4 text-sm italic text-ink-soft">
-                    Resolution proof has not been uploaded yet.
+                    {t("detail.noProof")}
                   </p>
                 ) : (
                   <div className="mt-5 grid gap-5 sm:grid-cols-2">
                     {/* BEFORE */}
                     <div className="flex flex-col gap-2">
                       <span className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                        Before · Reported Issue
+                        {t("detail.before")}
                       </span>
 
                       <div className="relative h-48 w-full overflow-hidden rounded-xl border border-line bg-slate-100">
@@ -393,23 +386,20 @@ export default function IssueDetailPage() {
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center text-sm text-ink-faint">
-                            No image uploaded by reporter
+                            {t("detail.noReporterImage")}
                           </div>
                         )}
                       </div>
 
                       <span className="text-xs text-ink-faint">
-                        Reported:{" "}
-                        {new Date(
-                          issue.createdAt
-                        ).toLocaleString()}
+                        {t("detail.reportedAtLabel", { date: new Date(issue.createdAt).toLocaleString() })}
                       </span>
                     </div>
 
                     {/* AFTER */}
                     <div className="flex flex-col gap-2">
                       <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-                        After · Resolution Proof
+                        {t("detail.after")}
                       </span>
 
                       <div className="relative h-48 w-full overflow-hidden rounded-xl border border-line bg-slate-100">
@@ -422,17 +412,13 @@ export default function IssueDetailPage() {
                       </div>
 
                       <span className="text-xs text-ink-faint">
-                        Resolved:{" "}
-                        {issue.resolvedAt
-                          ? new Date(
-                              issue.resolvedAt
-                            ).toLocaleString()
-                          : new Date(
-                              issue.updatedAt
-                            ).toLocaleString()}
-
+                        {t("detail.resolvedAtLabel", {
+                          date: issue.resolvedAt
+                            ? new Date(issue.resolvedAt).toLocaleString()
+                            : new Date(issue.updatedAt).toLocaleString()
+                        })}
                         {issue.resolvedBy
-                          ? ` by ${issue.resolvedBy}`
+                          ? ` ${t("detail.by", { name: issue.resolvedBy })}`
                           : ""}
                       </span>
                     </div>
@@ -448,25 +434,17 @@ export default function IssueDetailPage() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <h2 className="font-semibold text-ink">
-                Community verification
+                {t("detail.communityVerification")}
               </h2>
 
               <p className="mt-1 text-sm text-ink-soft">
-                {issue.confirmCount} confirmation
-                {issue.confirmCount !== 1 ? "s" : ""} ·{" "}
-                {issue.upvoteCount} upvote
-                {issue.upvoteCount !== 1 ? "s" : ""}
+                {t("detail.votesCount", { confirmCount: issue.confirmCount, upvoteCount: issue.upvoteCount })}
               </p>
 
               {myVote ? (
                 <p className="mt-4 flex items-center gap-2 rounded-xl bg-secondary-50 px-4 py-3 text-sm font-medium text-secondary">
                   <CheckCircle2 size={16} />
-
-                  You{" "}
-                  {myVote === "reject"
-                    ? "flagged"
-                    : `${myVote}ed`}{" "}
-                  this report. Thanks!
+                  {t("detail.voteLogged", { vote: myVote === "reject" ? "flag" : myVote })}
                 </p>
               ) : (
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -478,7 +456,7 @@ export default function IssueDetailPage() {
                     }
                   >
                     <CheckCircle2 size={16} />
-                    Confirm it exists
+                    {t("detail.confirmExists")}
                   </Button>
 
                   <Button
@@ -489,7 +467,7 @@ export default function IssueDetailPage() {
                     }
                   >
                     <ThumbsUp size={16} />
-                    Upvote
+                    {t("detail.upvote")}
                   </Button>
 
                   <Button
@@ -500,7 +478,7 @@ export default function IssueDetailPage() {
                     }
                   >
                     <Flag size={16} />
-                    Flag
+                    {t("detail.flag")}
                   </Button>
                 </div>
               )}
@@ -510,7 +488,7 @@ export default function IssueDetailPage() {
                   onClick={signIn}
                   className="mt-3 text-sm text-primary hover:underline"
                 >
-                  Sign in to verify
+                  {t("detail.signInToVerify")}
                 </button>
               )}
             </CardContent>
@@ -522,14 +500,13 @@ export default function IssueDetailPage() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <h2 className="font-semibold text-ink">
-                Discussion ({comments.length})
+                {t("detail.discussion", { count: comments.length })}
               </h2>
 
               <div className="mt-4 space-y-4">
                 {comments.length === 0 && (
                   <p className="text-sm text-ink-faint">
-                    No comments yet. Add supporting evidence or
-                    context.
+                    {t("detail.noComments")}
                   </p>
                 )}
 
@@ -572,8 +549,8 @@ export default function IssueDetailPage() {
                   }
                   placeholder={
                     isAuthed
-                      ? "Add a comment…"
-                      : "Sign in to comment"
+                      ? t("detail.addComment")
+                      : t("detail.signInToComment")
                   }
                   disabled={!isAuthed || posting}
                 />
@@ -603,7 +580,7 @@ export default function IssueDetailPage() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <h2 className="font-semibold text-ink">
-                Resolution timeline
+                {t("detail.timeline")}
               </h2>
 
               <div className="mt-5">
@@ -620,18 +597,18 @@ export default function IssueDetailPage() {
             <Card glass>
               <CardContent className="p-5 sm:p-6">
                 <Badge tone="blue">
-                  AI assessment
+                  {t("detail.aiAssessment")}
                 </Badge>
 
                 <div className="mt-3 space-y-2 text-sm">
                   <Row
-                    label="Confidence"
+                    label={t("detail.confidence")}
                     value={`${issue.confidence}%`}
                   />
 
                   {issue.riskScore !== undefined && (
                     <Row
-                      label="Risk score"
+                      label={t("detail.riskScore")}
                       value={`${issue.riskScore}/10`}
                     />
                   )}
@@ -649,7 +626,7 @@ export default function IssueDetailPage() {
         <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
           <span className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm">
             <Spinner className="h-4 w-4" />
-            Recording your vote…
+            {t("detail.recordingVote")}
           </span>
         </div>
       )}

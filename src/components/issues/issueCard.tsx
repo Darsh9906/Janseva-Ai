@@ -4,9 +4,25 @@ import Link from "next/link";
 import { MapPin, MessageSquare, CheckCircle2, Clock } from "lucide-react";
 import { SeverityBadge, StatusBadge } from "@/components/ui/Badge";
 import { timeAgo } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Issue } from "@/types";
 
 export default function IssueCard({ issue }: { issue: Issue }) {
+  const { t } = useTranslation();
+
+  const getTranslatedCategory = (id: string) => {
+    switch (id) {
+      case "Pothole": return t("common.pothole");
+      case "Water Leakage": return t("common.waterLeakage");
+      case "Streetlight": return t("common.streetlight");
+      case "Waste Management": return t("common.wasteManagement");
+      case "Road Damage": return t("common.roadDamage");
+      case "Drainage": return t("common.drainage");
+      case "Public Safety": return t("common.publicSafety");
+      default: return t("common.other");
+    }
+  };
+
   return (
     <Link
       href={`/issues/${issue.id}`}
@@ -14,7 +30,6 @@ export default function IssueCard({ issue }: { issue: Issue }) {
     >
       <div className="relative h-44 w-full overflow-hidden bg-slate-100">
         {issue.imageUrl ? (
-          
           <img
             src={issue.imageUrl}
             alt={issue.title}
@@ -35,7 +50,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
       <div className="p-4">
         <div className="flex items-center gap-2 text-xs font-medium text-primary">
           <span className="rounded-md bg-primary-50 px-2 py-0.5">
-            {issue.category}
+            {getTranslatedCategory(issue.category)}
           </span>
           <span className="flex items-center gap-1 text-ink-faint">
             <Clock size={12} /> {timeAgo(issue.createdAt)}
@@ -55,7 +70,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
         <div className="mt-3 flex items-center gap-4 border-t border-line pt-3 text-xs text-ink-soft">
           <span className="flex items-center gap-1">
             <CheckCircle2 size={13} className="text-secondary" />
-            {issue.confirmCount} confirmed
+            {issue.confirmCount} {t("common.verified")}
           </span>
           <span className="flex items-center gap-1">
             <MessageSquare size={13} /> {issue.commentCount}
