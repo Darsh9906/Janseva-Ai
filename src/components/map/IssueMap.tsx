@@ -9,6 +9,7 @@ import { Spinner, EmptyState } from "@/components/ui/Feedback";
 import { SeverityBadge, StatusBadge } from "@/components/ui/Badge";
 import { firebaseEnabled } from "@/lib/firebase";
 import { MapPin } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const containerStyle = { width: "100%", height: "100%" };
 const defaultCenter = { lat: 23.0225, lng: 72.5714 }; 
@@ -35,6 +36,7 @@ function pin(color: string): google.maps.Symbol {
 }
 
 export default function IssueMap() {
+  const { t } = useTranslation();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const { isLoaded } = useLoadScript({ googleMapsApiKey: apiKey });
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -121,7 +123,7 @@ export default function IssueMap() {
               href={`/issues/${active.id}`}
               className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
             >
-              View details →
+              {t("common.viewDetails")} →
             </Link>
           </div>
         </InfoWindowF>

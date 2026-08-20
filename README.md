@@ -5,7 +5,7 @@
 JanSeva-AI is an AI-powered civic issue management platform designed to connect citizens, government administrators, and field officers through a transparent and structured issue-resolution workflow.
 
 Citizens can report local civic problems such as potholes, water leaks, broken streetlights, garbage, and other infrastructure issues. AI-assisted analysis helps classify and prioritize reports, while administrators can verify and assign issues to authorized officers. Officers can then manage assigned work and update the issue lifecycle until resolution.
-
+   
 The platform combines **AI, geolocation, community participation, role-based access control, analytics, and civic workflow management** into one unified system.
 
 ---
