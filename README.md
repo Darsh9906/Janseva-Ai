@@ -942,3 +942,8 @@ The goal is to create a transparent, accountable and technology-assisted approac
 This project was developed as an academic BCA Semester 5 Minor Project.
 
 All project-specific source code, designs and academic materials are maintained by the project team.
+
+## Team Members 
+
+Darsh Bhatt 
+Dhrumil Dholakiya
