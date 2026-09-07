@@ -178,7 +178,7 @@ Citizen account
        └── Admin login → ❌ Denied
 ```
 
-This prevents ordinary users from gaining privileged access simply by selecting a different role.
+This prevents ordinary users from gaining privileged access simply by selecting a different role
 
 ---
 
